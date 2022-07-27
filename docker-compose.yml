@@ -1,0 +1,48 @@
+version: "3"
+
+services:
+  nginx:
+    image: nginx
+    ports:
+      - "80:80"
+    restart: always
+    volumes:
+      - ./www/build:/var/www/html
+      - ./nginx:/etc/nginx/conf.d
+    depends_on:
+      - php
+    networks:
+      - web
+
+  blog_php:
+    build:
+      context: ./php
+      dockerfile: Dockerfile
+    restart: always
+    ports:
+      - "9000:9000"
+    volumes:
+      - ./www/build:/var/www/html
+    environment:
+      - TZ=Asia/Shanghai
+    depends_on:
+      - mysql
+    networks:
+      - web
+
+  mysql:
+    image: mysql:5.7
+    restart: always
+    ports:
+      - "3306:3306"
+    env_file:
+      - mysql.env
+    volumes:
+      - ./mysql/data:/var/lib/mysql
+      - ./mysql/logs:/var/log/mysql
+      - ./mysql/conf:/etc/mysql/conf.d
+    networks:
+      - web
+
+networks:
+  web:
